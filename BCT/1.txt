@@ -1,0 +1,23 @@
+pragma solidity ^0.8.0;
+ 
+contract StudentData {
+    struct Student {
+        string name;
+        uint age;
+        uint studentId;
+    }
+ 
+    Student[] public students;
+ 
+    fallback() external payable {}
+ 
+    function addStudent(string memory _name, uint _age, uint _studentId) public {
+        students.push(Student(_name, _age, _studentId));
+    }
+ 
+    function getStudent(uint index) public view returns (string memory, uint, uint) {
+        require(index < students.length, "Student does not exist");
+        Student memory student = students[index];
+        return (student.name, student.age, student.studentId);
+    }
+}

@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+ 
+contract BankAccount {
+    address public owner;
+    uint public balance;
+ 
+    constructor() {
+        owner = msg.sender;
+    }
+ 
+    function deposit(uint _amount) public {
+        require(_amount > 0, "Deposit amount must be greater than zero");
+        balance += _amount;
+    }
+ 
+    function withdraw(uint _amount) public {
+        require(_amount > 0, "Withdraw amount must be greater than zero");
+        require(balance >= _amount, "Insufficient balance");
+        balance -= _amount;
+    }
+ 
+    function getBalance() public view returns (uint) {
+        return balance;
+    }
+}

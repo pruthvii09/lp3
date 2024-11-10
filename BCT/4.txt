@@ -1,0 +1,26 @@
+pragma solidity ^0.8.0;
+ 
+contract ProductInventory {
+    struct Product {
+        string name;
+        uint quantity;
+    }
+ 
+    Product[] public products;
+ 
+    function receiveProduct(string memory _name, uint _quantity) public {
+        products.push(Product(_name, _quantity));
+    }
+ 
+    function sellProduct(uint index, uint _quantity) public {
+        require(index < products.length, "Product does not exist");
+        require(products[index].quantity >= _quantity, "Insufficient stock");
+        products[index].quantity -= _quantity;
+    }
+ 
+    function getProductStock(uint index) public view returns (string memory, uint) {
+        require(index < products.length, "Product does not exist");
+        Product memory product = products[index];
+        return (product.name, product.quantity);
+    }
+}

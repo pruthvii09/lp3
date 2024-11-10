@@ -1,0 +1,89 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt  # Fixed typo in 'pyplot'
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler 
+import warnings
+warnings.filterwarnings('ignore')
+
+
+
+
+df = pd.read_csv("sales_data_sample.csv", encoding='latin1')
+
+
+df.head()
+
+
+
+df.describe()
+
+
+
+df.shape
+
+
+df = df[['QUANTITYORDERED', 'ORDERLINENUMBER']]
+df = df.dropna(axis=0)
+
+
+
+
+wcss = []
+for i in range(1, 11):
+    clustering = KMeans(n_clusters=i, init='k-means++', random_state=42)
+    clustering.fit(df)
+    wcss.append(clustering.inertia_)
+
+
+
+ks = range(1, 11)
+sns.lineplot(x=ks, y=wcss)
+plt.xlabel("Number of Clusters")
+plt.ylabel("WCSS")
+plt.title("Elbow Method for Optimal K")
+plt.show()
+
+
+
+
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15, 5))
+sns.scatterplot(ax=axes[0], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER').set_title('Without Clustering')
+sns.scatterplot(ax=axes[1], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER', hue=clustering.labels_, palette="viridis").set_title('Using Elbow Method')
+plt.show()
+
+
+
+ss = StandardScaler()
+scaled = ss.fit_transform(df)
+
+
+
+
+
+wcss_sc = []
+for i in range(1, 11):
+    clustering_sc = KMeans(n_clusters=i, init='k-means++', random_state=42)
+    clustering_sc.fit(scaled)
+    wcss_sc.append(clustering_sc.inertia_)
+
+
+
+sns.lineplot(x=ks, y=wcss_sc)
+plt.xlabel("Number of Clusters")
+plt.ylabel("WCSS (scaled data)")
+plt.title("Elbow Method for Scaled Data")
+plt.show()
+
+
+
+
+fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(20, 5))
+sns.scatterplot(ax=axes[0], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER').set_title('Without Clustering')
+sns.scatterplot(ax=axes[1], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER', hue=clustering.labels_, palette="viridis").set_title('With Elbow Method')
+sns.scatterplot(ax=axes[2], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER', hue=clustering_sc.labels_, palette="viridis").set_title('With Elbow Method (Scaled Data)')
+plt.show()
+
+
+

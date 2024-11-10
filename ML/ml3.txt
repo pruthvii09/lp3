@@ -1,0 +1,167 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+import matplotlib.pyplot as plt
+
+
+
+
+import seaborn as sns
+
+
+
+df = pd.read_csv('Churn_Modelling.csv') 
+
+
+df
+
+
+
+#step 2
+X = df.drop(['RowNumber', 'CustomerId', 'Surname', 'Exited'], axis=1)  # Remove unnecessary columns
+y = df['Exited'] 
+
+
+
+X
+
+
+
+
+y
+
+
+
+
+le_gender = LabelEncoder()
+X['Gender'] = le_gender.fit_transform(X['Gender'])
+
+le_geo = LabelEncoder()
+X['Geography'] = le_geo.fit_transform(X['Geography'])
+
+
+
+
+
+
+X
+
+
+
+
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+
+
+
+model = Sequential()
+
+
+
+
+
+
+model.add(Dense(64, input_dim=X_train.shape[1], activation='relu'))  # Using ReLU activation
+# Hidden Layer
+model.add(Dense(32, activation='relu'))  # You can experiment with other activations here (sigmoid, tanh, etc.)
+# Output Layer
+model.add(Dense(1, activation='sigmoid'))  # Sigmoid for binary classification
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+history = model.fit(X_train_scaled, y_train, epochs=30, batch_size=32, validation_data=(X_test_scaled, y_test))
+
+# Step 5: Evaluate the model and print accuracy score and confusion matrix
+y_pred = (model.predict(X_test_scaled) > 0.5).astype(int)
+
+
+
+
+
+
+
+
+
+# Accuracy score
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100}%")
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:")
+print(cm)
+
+
+
+
+
+
+
+model_tanh = Sequential()
+model_tanh.add(Dense(64, input_dim=X_train.shape[1], activation='tanh'))
+model_tanh.add(Dense(32, activation='tanh'))
+model_tanh.add(Dense(1, activation='sigmoid'))
+model_tanh.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model_tanh.fit(X_train_scaled, y_train, epochs=20, batch_size=32, validation_data=(X_test_scaled, y_test))
+
+# Evaluating model with 'tanh'
+y_pred_tanh = (model_tanh.predict(X_test_scaled) > 0.5).astype(int)
+accuracy_tanh = accuracy_score(y_test, y_pred_tanh)
+print(f"Accuracy with Tanh activation: {accuracy_tanh * 100:.2f}%")
+
+
+
+
+
+
+
+
+model_sigmoid = Sequential()
+
+
+model_sigmoid.add(Dense(64, input_dim=X_train.shape[1], activation='sigmoid'))
+
+model_sigmoid.add(Dense(32, activation='sigmoid'))
+
+
+model_sigmoid.add(Dense(1, activation='sigmoid'))
+
+model_sigmoid.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+
+history_sigmoid = model_sigmoid.fit(X_train_scaled, y_train, epochs=20, batch_size=32, validation_data=(X_test_scaled, y_test))
+
+y_pred_sigmoid = (model_sigmoid.predict(X_test_scaled) > 0.5).astype(int)
+accuracy_sigmoid = accuracy_score(y_test, y_pred_sigmoid)
+
+print(f"Accuracy with Sigmoid in all layers: {accuracy_sigmoid * 100:.2f}%")
+print("Confusion Matrix with Sigmoid in all layers:")
+print(confusion_matrix(y_test, y_pred_sigmoid))
+
+
+
+
+
+
+
+
+
+
+
+

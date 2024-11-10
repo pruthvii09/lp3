@@ -1,0 +1,100 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+import warnings
+warnings.filterwarnings('ignore')
+
+
+df = pd.read_csv("emails.csv")
+
+
+print(df.head())    
+
+
+print(df.columns) 
+
+
+print(df.isnull().sum()) # Check for null values
+
+
+df.dropna(inplace=True)     # Drop rows with missing values
+df.drop(['Email No.'], axis=1, inplace=True)   # Drop 'Email No.' column
+
+
+# Features and target variable
+X = df.drop(['Prediction'], axis=1)
+y = df['Prediction']
+
+
+
+from sklearn.preprocessing import scale
+X = scale(X)
+
+
+# Split data into training and testing sets
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+
+
+# K-Nearest Neighbors (KNN) Classifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import metrics
+
+
+
+knn = KNeighborsClassifier(n_neighbors=7)
+knn.fit(X_train, y_train)
+y_pred_knn = knn.predict(X_test)
+
+
+
+# Evaluation metrics for KNN
+print("KNN accuracy:", metrics.accuracy_score(y_test, y_pred_knn))
+print("Confusion Matrix (KNN):\n", metrics.confusion_matrix(y_test, y_pred_knn))
+
+
+
+# Error metrics for KNN
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+
+
+
+print("R2 Score (KNN):", r2_score(y_test, y_pred_knn))
+MSE_knn = mean_squared_error(y_test, y_pred_knn)
+print("Mean Squared Error (KNN):", MSE_knn)
+RMSE_knn = np.sqrt(MSE_knn)
+print("Root Mean Squared Error (KNN):", RMSE_knn)
+
+
+
+# Support Vector Machine (SVM) Classifier with C=1
+from sklearn.svm import SVC
+
+
+
+model_svm = SVC(C=1)
+model_svm.fit(X_train, y_train)
+y_pred_svm = model_svm.predict(X_test)
+
+
+
+
+# Evaluation metrics for SVM
+print("SVM accuracy:", metrics.accuracy_score(y_test, y_pred_svm))
+print("Confusion Matrix (SVM):\n", metrics.confusion_matrix(y_test, y_pred_svm))
+
+
+
+# Error metrics for SVM
+print("R2 Score (SVM):", r2_score(y_test, y_pred_svm))
+MSE_svm = mean_squared_error(y_test, y_pred_svm)
+print("Mean Squared Error (SVM):", MSE_svm)
+RMSE_svm = np.sqrt(MSE_svm)
+print("Root Mean Squared Error (SVM):", RMSE_svm)
+
+
+
+

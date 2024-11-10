@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+ 
+contract EmployeeData {
+    struct Employee {
+        string name;
+        uint age;
+        uint employeeId;
+    }
+ 
+    Employee[] public employees;
+ 
+    fallback() external payable {}
+ 
+    function addEmployee(string memory _name, uint _age, uint _employeeId) public {
+        employees.push(Employee(_name, _age, _employeeId));
+    }
+ 
+    function getEmployee(uint index) public view returns (string memory, uint, uint) {
+        require(index < employees.length, "Employee does not exist");
+        Employee memory employee = employees[index];
+        return (employee.name, employee.age, employee.employeeId);
+    }
+}
