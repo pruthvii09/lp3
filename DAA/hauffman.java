@@ -108,3 +108,24 @@ public class HuffmanEncoding {
         scanner.close();
     }
 }
+
+/*
+ * Time and Space Complexity Analysis:
+ * 
+ * 1. Building the Huffman Tree:
+ *    - Time Complexity: O(n log n)
+ *      - We insert `n` elements into the priority queue. Each insert operation takes O(log n), leading to a time complexity of O(n log n).
+ *      - After each pair of nodes is removed and a new node is inserted, the priority queue is rebalanced, and this operation takes O(log n) time.
+ *      - The number of operations is proportional to `n` (where `n` is the number of characters), hence the overall time complexity is O(n log n).
+ *    - Space Complexity: O(n)
+ *      - The priority queue stores `n` nodes, and the space required for this is O(n). Additionally, we use a map to store the generated Huffman codes, which requires O(n) space.
+ * 
+ * 2. Generating the Huffman codes:
+ *    - Time Complexity: O(n)
+ *      - Traversing the tree to generate the Huffman codes takes O(n), where `n` is the number of unique characters, since each node is visited exactly once.
+ *    - Space Complexity: O(n)
+ *      - The space required to store the Huffman codes is O(n), as we store one code per character.
+ * 
+ * Overall Time Complexity: O(n log n)
+ * Overall Space Complexity: O(n)
+ */

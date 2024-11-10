@@ -1,159 +1,149 @@
+# Importing necessary libraries for data manipulation, visualization, and date handling
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import datetime as dt
 
-
+# Reading the dataset from a CSV file
 df = pd.read_csv("uber.csv")
-df.head()
+df.head()  # Displaying the first few rows to understand the data structure
 
+# Dropping unnecessary columns to simplify the dataset
+df.drop(columns=['Unnamed: 0','key'], inplace=True)
 
-df.drop(columns=['Unnamed: 0','key'],inplace=True)
-
-
+# Checking the structure and types of data in each column
 df.info()
 
+# Dropping any rows with missing values to ensure data integrity
+df.dropna(how='any', inplace=True)
 
-df.dropna(how='any',inplace=True)
-
-
+# Verifying there are no remaining null values in the dataset
 df.isnull().sum()
 
-
+# Visualizing outliers for each numerical column using boxplots
 for col in df.select_dtypes(exclude=['object']):
     plt.figure()
-    sns.boxplot(data=df,x=col)
+    sns.boxplot(data=df, x=col)
 
-
+# Filtering data to remove unrealistic latitude, longitude, fare, and passenger values
 df = df[
     (df.pickup_latitude > -90) & (df.pickup_latitude < 90) &
     (df.dropoff_latitude > -90) & (df.dropoff_latitude < 90) &
     (df.pickup_longitude > -180) & (df.pickup_longitude < 180) &
     (df.dropoff_longitude > -180) & (df.dropoff_longitude < 180) &
-    (df.fare_amount > 0) & (df.passenger_count > 0)  & (df.passenger_count < 50)
+    (df.fare_amount > 0) & (df.passenger_count > 0) & (df.passenger_count < 50)
 ]
 
-
+# Importing additional modules for calculating distance
 from math import cos, asin, sqrt, pi
 import numpy as np
 
+# Defining a function to calculate distance between two coordinates using the Haversine formula
+def distance(lat_1, lon_1, lat_2, lon_2):
+    # Converting degrees to radians for latitude and longitude
+    lon_1, lon_2, lat_1, lat_2 = map(np.radians, [lon_1, lon_2, lat_1, lat_2])
 
-def distance(lat_1,lon_1,lat_2,lon_2):
-#     lat1 = row.pickup_latitude
-#     lon1 = row.pickup_longitude
-#     lat2 = row.dropoff_latitude
-#     lon2 = row.dropoff_longitude
-    lon_1, lon_2, lat_1, lat_2 = map(np.radians, [lon_1, lon_2, lat_1, lat_2])  #Degrees to Radians
-
-
+    # Calculating the differences in latitude and longitude
     diff_lon = lon_2 - lon_1
     diff_lat = lat_2 - lat_1
 
-
+    # Applying the Haversine formula to calculate distance in kilometers
     km = 2 * 6371 * np.arcsin(np.sqrt(np.sin(diff_lat/2.0)**2 +  np.cos(lat_1) * np.cos(lat_2) * np.sin(diff_lon/2.0)**2))
 
     return km
 
-
-temp = distance(df['pickup_latitude'],df['pickup_longitude'],df['dropoff_latitude'],df['dropoff_longitude'])
+# Calculating distance for each row in the dataset
+temp = distance(df['pickup_latitude'], df['pickup_longitude'], df['dropoff_latitude'], df['dropoff_longitude'])
 temp.head()
 
-
+# Creating a copy of the DataFrame to add the calculated distance
 df_new = df.copy()
-df_new['Distance'] = temp
+df_new['Distance'] = temp  # Adding a new column 'Distance' for the calculated distances
 df = df_new
 df.head()
 
+# Visualizing the distribution of distances to detect outliers
+sns.boxplot(data=df, x='Distance')
 
-sns.boxplot(data=df,x='Distance')
-
-
+# Removing extreme values in the distance column to focus on plausible trips
 df = df[(df['Distance'] < 200) & (df['Distance'] > 0)]
 
-
+# Converting 'pickup_datetime' to datetime format to extract time-related features
 df['pickup_datetime'] = pd.to_datetime(df['pickup_datetime'])
 
-
+# Extracting day of the week, year, month, and hour from the pickup datetime
 df['week_day'] = df['pickup_datetime'].dt.day_name()
 df['Year'] = df['pickup_datetime'].dt.year
 df['Month'] = df['pickup_datetime'].dt.month
 df['Hour'] = df['pickup_datetime'].dt.hour
 
-
-
-df.drop(columns=['pickup_datetime','pickup_latitude','pickup_longitude','dropoff_latitude','dropoff_longitude'],inplace=True)
-
+# Dropping columns that are no longer necessary after feature extraction
+df.drop(columns=['pickup_datetime', 'pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude'], inplace=True)
 
 df.head()
 
-
-
+# Copying the DataFrame to transform day of the week and hour for weekday/weekend and time-of-day analysis
 temp = df.copy()
 
+# Function to classify each day as weekday (0) or weekend (1)
 def convert_week_day(day):
-    if day in ['Monday','Tuesday','Wednesday','Thursday']:
-        return 0 # Weekday
-    return 1 # Weekend
+    if day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday']:
+        return 0  # Weekday
+    return 1  # Weekend
+
+# Function to classify each hour into time-of-day categories
 def convert_hour(hour):
     if 5 <= hour <= 12:
-        return 1
+        return 1  # Morning
     elif 12 < hour <= 17:
-        return 2
+        return 2  # Afternoon
     elif 17 < hour < 24:
-        return 3
-    return 0
+        return 3  # Evening
+    return 0  # Night
+
+# Applying the conversion functions to 'week_day' and 'Hour' columns
 df['week_day'] = temp['week_day'].apply(convert_week_day)
 df['Hour'] = temp['Hour'].apply(convert_hour)
 df.head()
 
-
+# Calculating correlations between numeric features to identify relationships
 df.corr()
 
+# Plotting a scatterplot to visualize the relationship between fare amount and distance
+sns.scatterplot(y=df['fare_amount'], x=df['Distance'])
 
-sns.scatterplot(y=df['fare_amount'],x=df['Distance'])
-
-
+# Standardizing the features for better performance in machine learning models
 from sklearn.preprocessing import StandardScaler
-x = df[['Distance']].values
-y = df['fare_amount'].values.reshape(-1,1)
+x = df[['Distance']].values  # Feature: Distance
+y = df['fare_amount'].values.reshape(-1, 1)  # Target: Fare amount
 
-
+# Splitting data into training and test sets for model evaluation
 from sklearn.model_selection import train_test_split
-x_train, x_test, y_train,y_test = train_test_split(x,y,random_state=10)
+x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=10)
 
-
+# Scaling the features and target variable for improved model performance
 std_x = StandardScaler()
 x_train = std_x.fit_transform(x_train)
-
-
 x_test = std_x.transform(x_test)
-
 
 std_y = StandardScaler()
 y_train = std_y.fit_transform(y_train)
-
-
 y_test = std_y.transform(y_test)
 
-
-
-from sklearn.metrics import mean_squared_error,r2_score, mean_absolute_error
+# Defining a function to fit a model, make predictions, and calculate performance metrics
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 def fit_predict(model):
-    model.fit(x_train,y_train.ravel())
-    y_pred = model.predict(x_test)
-    r_squared = r2_score(y_test,y_pred)
-    RMSE = mean_squared_error(y_test, y_pred,squared=False)
-    MAE = mean_absolute_error(y_test,y_pred)
+    model.fit(x_train, y_train.ravel())  # Training the model
+    y_pred = model.predict(x_test)  # Predicting on test set
+    # Calculating evaluation metrics
+    r_squared = r2_score(y_test, y_pred)
+    RMSE = mean_squared_error(y_test, y_pred, squared=False)
+    MAE = mean_absolute_error(y_test, y_pred)
     print('R-squared: ', r_squared)
     print('RMSE: ', RMSE)
-    print("MAE:  ",MAE)
+    print("MAE:  ", MAE)
 
-
-
+# Importing and evaluating two models: Linear Regression and Random Forest Regressor
 from sklearn.linear_model import LinearRegression
-
-
 from sklearn.ensemble import RandomForestRegressor
-fit_predict(RandomForestRegressor())
-
-
+fit_predict(RandomForestRegressor())  # Fitting and predicting with Random Forest

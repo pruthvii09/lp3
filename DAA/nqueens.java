@@ -2,47 +2,48 @@ import java.util.Scanner;
 
 public class NQueens {
 
+    // Function to check if it's safe to place a queen at board[row][col]
     private static boolean isSafe(int[][] board, int row, int col, int N) {
         // Check this column for any queen
         for (int i = 0; i < row; i++) {
             if (board[i][col] == 1) {
-                return false;
+                return false;  // There's a queen in the same column
             }
         }
 
         // Check upper diagonal on the left side
         for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
             if (board[i][j] == 1) {
-                return false;
+                return false;  // There's a queen in the left diagonal
             }
         }
 
         // Check upper diagonal on the right side
         for (int i = row, j = col; i >= 0 && j < N; i--, j++) {
             if (board[i][j] == 1) {
-                return false;
+                return false;  // There's a queen in the right diagonal
             }
         }
 
-        return true;
+        return true;  // It's safe to place the queen
     }
 
     // Recursive function to solve the N-Queens problem
     private static boolean solveNQueens(int[][] board, int row, int N) {
         // Base case: If all queens are placed
         if (row >= N) {
-            return true;
+            return true;  // All queens are successfully placed
         }
 
         // Try placing a queen in all columns of the current row
         for (int col = 0; col < N; col++) {
             if (isSafe(board, row, col, N)) {
-                // Place the queen
+                // Place the queen at (row, col)
                 board[row][col] = 1;
 
                 // Recur to place the rest of the queens
                 if (solveNQueens(board, row + 1, N)) {
-                    return true;
+                    return true;  // If the next queen placement was successful, return true
                 }
 
                 // Backtrack if placing queen here doesn't lead to a solution
@@ -50,7 +51,7 @@ public class NQueens {
             }
         }
 
-        // If no valid position is found, return false
+        // If no valid position is found in this row, return false
         return false;
     }
 
@@ -63,11 +64,11 @@ public class NQueens {
 
         // Start solving from the next row
         if (solveNQueens(board, row + 1, N)) {
-            printBoard(board, N);
+            printBoard(board, N);  // Print the board if a solution is found
             return true;
         } else {
             System.out.println("No solution exists");
-            return false;
+            return false;  // If no solution is found, print a message
         }
     }
 
@@ -77,7 +78,7 @@ public class NQueens {
             for (int j = 0; j < N; j++) {
                 System.out.print(board[i][j] + " ");
             }
-            System.out.println();
+            System.out.println();  // Print each row of the board
         }
     }
 
@@ -101,3 +102,11 @@ public class NQueens {
         sc.close();
     }
 }
+
+/*
+Time Complexity:
+- The recursive function `solveNQueens` tries to place a queen in each of the N rows, and for each row, it tries N columns. In the worst case, it explores all N^N possible configurations, making the time complexity of this algorithm O(N^N).
+
+Space Complexity:
+- The space complexity is determined by the recursion stack, which in the worst case, can go as deep as N (for each row in the board). Thus, the space complexity is O(N), which accounts for the space used by the recursion call stack and the storage required for the board.
+*/

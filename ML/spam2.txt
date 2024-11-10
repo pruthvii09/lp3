@@ -1,100 +1,78 @@
+# Importing essential libraries for data manipulation, visualization, and warning handling
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 %matplotlib inline
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore')  # Suppressing warning messages for clean output
 
-
+# Loading the dataset
 df = pd.read_csv("emails.csv")
 
-
+# Displaying the first few rows to understand the data structure
 print(df.head())    
 
-
+# Displaying column names to identify available features and target variable
 print(df.columns) 
 
+# Checking for any missing values in the dataset
+print(df.isnull().sum())
 
-print(df.isnull().sum()) # Check for null values
+# Dropping rows with missing values to maintain dataset consistency
+df.dropna(inplace=True)
 
+# Dropping the 'Email No.' column as it does not contribute to the prediction
+df.drop(['Email No.'], axis=1, inplace=True)   
 
-df.dropna(inplace=True)     # Drop rows with missing values
-df.drop(['Email No.'], axis=1, inplace=True)   # Drop 'Email No.' column
+# Separating the features (X) and target variable (y)
+X = df.drop(['Prediction'], axis=1)  # X contains all features except the target column
+y = df['Prediction']  # y is the target variable we want to predict
 
-
-# Features and target variable
-X = df.drop(['Prediction'], axis=1)
-y = df['Prediction']
-
-
-
+# Scaling features to normalize data distribution for improved model performance
 from sklearn.preprocessing import scale
 X = scale(X)
 
-
-# Split data into training and testing sets
+# Splitting data into training and testing sets for model evaluation
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-
-
-# K-Nearest Neighbors (KNN) Classifier
+# Implementing K-Nearest Neighbors (KNN) classifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 
-
-
+# Initializing KNN with 7 neighbors
 knn = KNeighborsClassifier(n_neighbors=7)
-knn.fit(X_train, y_train)
-y_pred_knn = knn.predict(X_test)
+knn.fit(X_train, y_train)  # Training the KNN model
+y_pred_knn = knn.predict(X_test)  # Making predictions on the test set
 
-
-
-# Evaluation metrics for KNN
+# Evaluating the performance of the KNN model using accuracy and confusion matrix
 print("KNN accuracy:", metrics.accuracy_score(y_test, y_pred_knn))
 print("Confusion Matrix (KNN):\n", metrics.confusion_matrix(y_test, y_pred_knn))
 
-
-
-# Error metrics for KNN
+# Calculating error metrics for KNN model
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 
-
-
-print("R2 Score (KNN):", r2_score(y_test, y_pred_knn))
-MSE_knn = mean_squared_error(y_test, y_pred_knn)
+print("R2 Score (KNN):", r2_score(y_test, y_pred_knn))  # R-squared score for performance
+MSE_knn = mean_squared_error(y_test, y_pred_knn)  # Mean Squared Error
 print("Mean Squared Error (KNN):", MSE_knn)
-RMSE_knn = np.sqrt(MSE_knn)
+RMSE_knn = np.sqrt(MSE_knn)  # Root Mean Squared Error for interpreting error magnitude
 print("Root Mean Squared Error (KNN):", RMSE_knn)
 
-
-
-# Support Vector Machine (SVM) Classifier with C=1
+# Implementing Support Vector Machine (SVM) classifier with regularization parameter C=1
 from sklearn.svm import SVC
 
+model_svm = SVC(C=1)  # SVM model initialization with default kernel (linear)
+model_svm.fit(X_train, y_train)  # Training the SVM model
+y_pred_svm = model_svm.predict(X_test)  # Making predictions on the test set
 
-
-model_svm = SVC(C=1)
-model_svm.fit(X_train, y_train)
-y_pred_svm = model_svm.predict(X_test)
-
-
-
-
-# Evaluation metrics for SVM
+# Evaluating the performance of the SVM model using accuracy and confusion matrix
 print("SVM accuracy:", metrics.accuracy_score(y_test, y_pred_svm))
 print("Confusion Matrix (SVM):\n", metrics.confusion_matrix(y_test, y_pred_svm))
 
-
-
-# Error metrics for SVM
-print("R2 Score (SVM):", r2_score(y_test, y_pred_svm))
-MSE_svm = mean_squared_error(y_test, y_pred_svm)
+# Calculating error metrics for SVM model
+print("R2 Score (SVM):", r2_score(y_test, y_pred_svm))  # R-squared score for performance
+MSE_svm = mean_squared_error(y_test, y_pred_svm)  # Mean Squared Error
 print("Mean Squared Error (SVM):", MSE_svm)
-RMSE_svm = np.sqrt(MSE_svm)
+RMSE_svm = np.sqrt(MSE_svm)  # Root Mean Squared Error for interpreting error magnitude
 print("Root Mean Squared Error (SVM):", RMSE_svm)
-
-
-
-

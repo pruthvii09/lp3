@@ -81,3 +81,22 @@ public class FractionalKnapsack {
         scanner.close();
     }
 }
+
+/*
+ * Time and Space Complexity Analysis:
+ * 
+ * 1. Sorting the items by value-to-weight ratio:
+ *    - Time Complexity: O(n log n)
+ *      - Sorting the items based on the value-to-weight ratio using the Arrays.sort() method takes O(n log n) time.
+ *    - Space Complexity: O(1)
+ *      - Sorting is done in-place, so the space complexity is constant.
+ * 
+ * 2. Iterating over the items:
+ *    - Time Complexity: O(n)
+ *      - We loop through each item once to select it for the knapsack, making this step linear in time.
+ *    - Space Complexity: O(1)
+ *      - The space complexity for this step is constant, as we only store a few variables for tracking the knapsack capacity and total value.
+ * 
+ * Overall Time Complexity: O(n log n)
+ * Overall Space Complexity: O(1)
+ */

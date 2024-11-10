@@ -1,3 +1,4 @@
+# Import necessary libraries for data manipulation, neural network modeling, and visualization
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -6,162 +7,98 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
-
-
-
-
 import seaborn as sns
 
+# Load the dataset
+df = pd.read_csv('Churn_Modelling.csv')
 
-
-df = pd.read_csv('Churn_Modelling.csv') 
-
-
+# Display the first few rows to understand data structure
 df
 
+# Separate features and target variable; drop columns irrelevant for prediction
+X = df.drop(['RowNumber', 'CustomerId', 'Surname', 'Exited'], axis=1)  # Removing unnecessary columns
+y = df['Exited']  # Target variable (whether the customer exited or not)
 
-
-#step 2
-X = df.drop(['RowNumber', 'CustomerId', 'Surname', 'Exited'], axis=1)  # Remove unnecessary columns
-y = df['Exited'] 
-
-
-
+# Display the feature dataset
 X
 
-
-
-
+# Display the target variable
 y
 
-
-
-
+# Encode categorical variables: 'Gender' and 'Geography'
 le_gender = LabelEncoder()
-X['Gender'] = le_gender.fit_transform(X['Gender'])
+X['Gender'] = le_gender.fit_transform(X['Gender'])  # Encode 'Gender' as numerical values
 
 le_geo = LabelEncoder()
-X['Geography'] = le_geo.fit_transform(X['Geography'])
+X['Geography'] = le_geo.fit_transform(X['Geography'])  # Encode 'Geography' as numerical values
 
-
-
-
-
-
+# Display the transformed feature dataset
 X
 
-
-
-
-
-
-
+# Split data into training and testing sets (80% train, 20% test)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-
-
+# Standardize the feature data to improve model performance
 scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+X_train_scaled = scaler.fit_transform(X_train)  # Fit and transform training data
+X_test_scaled = scaler.transform(X_test)        # Transform test data with the same scaler
 
-
-
-
-
+# Initialize the neural network model
 model = Sequential()
 
-
-
-
-
-
-model.add(Dense(64, input_dim=X_train.shape[1], activation='relu'))  # Using ReLU activation
-# Hidden Layer
-model.add(Dense(32, activation='relu'))  # You can experiment with other activations here (sigmoid, tanh, etc.)
-# Output Layer
+# Input Layer with 64 neurons, 'relu' activation function
+model.add(Dense(64, input_dim=X_train.shape[1], activation='relu'))  # Input layer with ReLU activation
+# Hidden Layer with 32 neurons, 'relu' activation function
+model.add(Dense(32, activation='relu'))  # Hidden layer to extract patterns
+# Output Layer with 1 neuron, 'sigmoid' for binary classification
 model.add(Dense(1, activation='sigmoid'))  # Sigmoid for binary classification
 
-# Compile the model
+# Compile the model with Adam optimizer and binary cross-entropy loss
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-# Train the model
+# Train the model with training data and validate using test data
 history = model.fit(X_train_scaled, y_train, epochs=30, batch_size=32, validation_data=(X_test_scaled, y_test))
 
-# Step 5: Evaluate the model and print accuracy score and confusion matrix
+# Predict on test data (convert predictions to binary with threshold of 0.5)
 y_pred = (model.predict(X_test_scaled) > 0.5).astype(int)
 
-
-
-
-
-
-
-
-
-# Accuracy score
+# Calculate accuracy score
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy * 100}%")
+print(f"Accuracy: {accuracy * 100}%")  # Print accuracy percentage
 
-# Confusion Matrix
+# Compute and display the confusion matrix
 cm = confusion_matrix(y_test, y_pred)
 print("Confusion Matrix:")
 print(cm)
 
-
-
-
-
-
-
+# Define and compile an alternative model with 'tanh' activation function for hidden layers
 model_tanh = Sequential()
-model_tanh.add(Dense(64, input_dim=X_train.shape[1], activation='tanh'))
-model_tanh.add(Dense(32, activation='tanh'))
-model_tanh.add(Dense(1, activation='sigmoid'))
+model_tanh.add(Dense(64, input_dim=X_train.shape[1], activation='tanh'))  # Input layer with 'tanh' activation
+model_tanh.add(Dense(32, activation='tanh'))                              # Hidden layer with 'tanh' activation
+model_tanh.add(Dense(1, activation='sigmoid'))                            # Output layer with 'sigmoid' for binary classification
 model_tanh.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the 'tanh' model
 model_tanh.fit(X_train_scaled, y_train, epochs=20, batch_size=32, validation_data=(X_test_scaled, y_test))
 
-# Evaluating model with 'tanh'
+# Evaluate the 'tanh' model
 y_pred_tanh = (model_tanh.predict(X_test_scaled) > 0.5).astype(int)
 accuracy_tanh = accuracy_score(y_test, y_pred_tanh)
-print(f"Accuracy with Tanh activation: {accuracy_tanh * 100:.2f}%")
+print(f"Accuracy with Tanh activation: {accuracy_tanh * 100:.2f}%")  # Print accuracy percentage with tanh activation
 
-
-
-
-
-
-
-
+# Initialize a new model with 'sigmoid' activation function for all layers
 model_sigmoid = Sequential()
-
-
-model_sigmoid.add(Dense(64, input_dim=X_train.shape[1], activation='sigmoid'))
-
-model_sigmoid.add(Dense(32, activation='sigmoid'))
-
-
-model_sigmoid.add(Dense(1, activation='sigmoid'))
-
+model_sigmoid.add(Dense(64, input_dim=X_train.shape[1], activation='sigmoid'))  # Input layer with 'sigmoid' activation
+model_sigmoid.add(Dense(32, activation='sigmoid'))                              # Hidden layer with 'sigmoid' activation
+model_sigmoid.add(Dense(1, activation='sigmoid'))                               # Output layer with 'sigmoid' for binary classification
 model_sigmoid.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-
+# Train the 'sigmoid' model
 history_sigmoid = model_sigmoid.fit(X_train_scaled, y_train, epochs=20, batch_size=32, validation_data=(X_test_scaled, y_test))
 
+# Evaluate the 'sigmoid' model
 y_pred_sigmoid = (model_sigmoid.predict(X_test_scaled) > 0.5).astype(int)
 accuracy_sigmoid = accuracy_score(y_test, y_pred_sigmoid)
-
-print(f"Accuracy with Sigmoid in all layers: {accuracy_sigmoid * 100:.2f}%")
+print(f"Accuracy with Sigmoid in all layers: {accuracy_sigmoid * 100:.2f}%")  # Print accuracy percentage with sigmoid activation
 print("Confusion Matrix with Sigmoid in all layers:")
-print(confusion_matrix(y_test, y_pred_sigmoid))
-
-
-
-
-
-
-
-
-
-
-
-
+print(confusion_matrix(y_test, y_pred_sigmoid))  # Print confusion matrix with sigmoid activation

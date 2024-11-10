@@ -1,43 +1,37 @@
+# Import necessary libraries for data manipulation, visualization, clustering, and scaling
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt  # Fixed typo in 'pyplot'
+import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler 
+from sklearn.preprocessing import StandardScaler
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore')  # Suppress warnings for cleaner output
 
-
-
-
+# Load the dataset with specified encoding to handle special characters
 df = pd.read_csv("sales_data_sample.csv", encoding='latin1')
 
-
+# Display the first few rows of the dataset for an initial preview
 df.head()
 
-
-
+# Get a summary of statistical metrics for numerical columns
 df.describe()
 
-
-
+# Check the shape (rows and columns) of the dataset
 df.shape
 
-
+# Select specific columns for clustering and drop any rows with missing values
 df = df[['QUANTITYORDERED', 'ORDERLINENUMBER']]
 df = df.dropna(axis=0)
 
-
-
-
+# Initialize a list to store Within-Cluster Sum of Squares (WCSS) for each k
 wcss = []
 for i in range(1, 11):
-    clustering = KMeans(n_clusters=i, init='k-means++', random_state=42)
-    clustering.fit(df)
-    wcss.append(clustering.inertia_)
+    clustering = KMeans(n_clusters=i, init='k-means++', random_state=42)  # KMeans with k clusters
+    clustering.fit(df)  # Fit KMeans to the dataset
+    wcss.append(clustering.inertia_)  # Append WCSS (inertia) for current k
 
-
-
+# Plot WCSS values to visualize the "Elbow" and determine optimal number of clusters
 ks = range(1, 11)
 sns.lineplot(x=ks, y=wcss)
 plt.xlabel("Number of Clusters")
@@ -45,45 +39,33 @@ plt.ylabel("WCSS")
 plt.title("Elbow Method for Optimal K")
 plt.show()
 
-
-
-
+# Scatter plots to compare data before and after clustering with KMeans
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15, 5))
 sns.scatterplot(ax=axes[0], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER').set_title('Without Clustering')
 sns.scatterplot(ax=axes[1], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER', hue=clustering.labels_, palette="viridis").set_title('Using Elbow Method')
 plt.show()
 
-
-
+# Standardize features for better clustering performance
 ss = StandardScaler()
 scaled = ss.fit_transform(df)
 
-
-
-
-
+# Compute WCSS for scaled data with varying cluster sizes (1 to 10)
 wcss_sc = []
 for i in range(1, 11):
     clustering_sc = KMeans(n_clusters=i, init='k-means++', random_state=42)
     clustering_sc.fit(scaled)
     wcss_sc.append(clustering_sc.inertia_)
 
-
-
+# Plot WCSS values for scaled data to find the optimal number of clusters
 sns.lineplot(x=ks, y=wcss_sc)
 plt.xlabel("Number of Clusters")
 plt.ylabel("WCSS (scaled data)")
 plt.title("Elbow Method for Scaled Data")
 plt.show()
 
-
-
-
+# Three-panel scatter plot to compare original data, clustered data, and scaled clustered data
 fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(20, 5))
 sns.scatterplot(ax=axes[0], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER').set_title('Without Clustering')
 sns.scatterplot(ax=axes[1], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER', hue=clustering.labels_, palette="viridis").set_title('With Elbow Method')
 sns.scatterplot(ax=axes[2], data=df, x='QUANTITYORDERED', y='ORDERLINENUMBER', hue=clustering_sc.labels_, palette="viridis").set_title('With Elbow Method (Scaled Data)')
 plt.show()
-
-
-
